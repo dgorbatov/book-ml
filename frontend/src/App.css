@@ -1,5 +1,7 @@
 .App {
   text-align: center;
+  min-height: 100vh;
+  padding: 20px;
 }
 
 .App-logo {
@@ -35,4 +37,25 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.container {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 20px;
+  height: calc(100vh - 40px);
+  text-align: left;
+}
+
+.upload-controls {
+  padding: 20px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+}
+
+.pdf-viewer {
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  padding: 20px;
+  height: 100%;
 }
