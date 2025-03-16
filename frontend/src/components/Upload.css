@@ -17,4 +17,59 @@
   border-radius: 8px;
   padding: 20px;
   height: 100%;
+}
+
+.pdf-metadata {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: white;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.pdf-metadata h3 {
+    margin-top: 0;
+    color: #333;
+}
+
+.pdf-metadata p {
+    margin: 8px 0;
+    color: #666;
+}
+
+.pdf-metadata strong {
+    color: #333;
+}
+
+.paragraphs-list {
+    margin-top: 20px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.paragraph-detail {
+    margin-bottom: 10px;
+    background-color: white;
+    border-radius: 4px;
+    padding: 8px;
+}
+
+.paragraph-detail summary {
+    cursor: pointer;
+    font-weight: bold;
+    padding: 5px 0;
+}
+
+.paragraph-detail summary:hover {
+    color: #61dafb;
+}
+
+.paragraph-content {
+    padding: 10px;
+    margin: 5px 0;
+    background-color: #f8f8f8;
+    border-radius: 4px;
+    line-height: 1.5;
+    text-align: justify;
 } 

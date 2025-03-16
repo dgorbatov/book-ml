@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from typing import List, Optional
-from datetime import datetime
 
 @dataclass
 class Section:
@@ -11,7 +10,6 @@ class Section:
 class PDFFile:
     title: Optional[str]
     author: Optional[str]
-    creation_date: Optional[datetime]
     text_content: str
     sections: List[Section]
     filename: str
@@ -20,7 +18,6 @@ class PDFFile:
         self.filename = filename
         self.title = None
         self.author = None
-        self.creation_date = None
         self.text_content = ""
         self.sections = []
     
@@ -28,11 +25,10 @@ class PDFFile:
         """Add a new section to the PDF file"""
         self.sections.append(Section(title=title, content=content))
     
-    def set_metadata(self, title: Optional[str], author: Optional[str], creation_date: Optional[datetime]) -> None:
+    def set_metadata(self, title: Optional[str], author: Optional[str]) -> None:
         """Set the metadata for the PDF file"""
         self.title = title
         self.author = author
-        self.creation_date = creation_date
     
     def set_text_content(self, content: str) -> None:
         """Set the full text content of the PDF"""
@@ -55,7 +51,6 @@ class PDFFile:
             "filename": self.filename,
             "title": self.title,
             "author": self.author,
-            "creation_date": self.creation_date.isoformat() if self.creation_date else None,
             "text_content": self.text_content,
             "sections": [{"title": s.title, "content": s.content} for s in self.sections]
         }

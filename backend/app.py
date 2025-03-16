@@ -23,9 +23,13 @@ def upload():
 
     print(f"Received file: {file.filename}")
 
-    extract_information_from_pdf(file.stream);
-
-    return jsonify({"message": "File uploaded successfully!"})
+    pdf_file = extract_information_from_pdf(file)
+    
+    # Convert PDFFile object to dictionary for JSON response
+    return jsonify({
+        "message": "File uploaded successfully!",
+        "pdf_data": pdf_file.to_dict()
+    })
 
 if __name__ == '__main__':
     os.environ["FLASK_ENV"] = "development"
