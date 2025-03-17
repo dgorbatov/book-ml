@@ -89,8 +89,8 @@ function Upload() {
                         <h4>Paragraphs</h4>
                         {pdfData.sections.map((section, index) => (
                             <details key={index} className="paragraph-detail">
-                                <summary>{section.title}</summary>
-                                <p className="paragraph-content">{section.content}</p>
+                                <summary>{index + 1}</summary>
+                                <p className="paragraph-content">{section}</p>
                             </details>
                         ))}
                     </div>
