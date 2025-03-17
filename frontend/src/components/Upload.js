@@ -11,6 +11,7 @@ function Upload() {
   };
 
   const handleUpload = async () => {
+    setPdfData(null);
     if (!selectedFile) {
       setUploadStatus('Please select a file first');
       return;
@@ -24,8 +25,6 @@ function Upload() {
     const formData = new FormData();
     formData.append('pdf', selectedFile);
 
-    console.log(selectedFile);
-
     try {
         const response = await fetch('/api/upload', {
             method: 'POST',
@@ -37,7 +36,7 @@ function Upload() {
             setUploadStatus('File uploaded successfully!');
             setPdfData(data.pdf_data);
         } else {
-            setUploadStatus(`Upload failed: ${data.message}`);
+            setUploadStatus(`Upload failed: ${data.error}`);
         }
     } catch (error) {
       setUploadStatus('Upload failed: ' + error.message);

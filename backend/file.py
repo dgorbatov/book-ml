@@ -15,7 +15,8 @@ class PDFFile:
     
     def __init__(self, filename: str, title: Optional[str] = None, author: Optional[str] = None, text_content: str = ""):
         self.filename = filename
-        self.title = title
+        print(title);
+        self.title =  title if title is not None else filename.split(".pdf")[0]
         self.author = author
         self.text_content = text_content
         self.sections = []

@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Upload from './components/Upload';
+import PDFList from './components/PDFList';
 import './App.css';
 
 function App() {
@@ -26,12 +27,13 @@ function App() {
   );
 }
 
-// Simple Home component
+// Home component now includes PDFList
 function Home() {
   return (
     <div className="home">
       <h1>Welcome to PDF Analyzer</h1>
       <p>Use the navigation menu to upload and analyze PDFs.</p>
+      <PDFList />
     </div>
   );
 }

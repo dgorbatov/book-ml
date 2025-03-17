@@ -1,0 +1,78 @@
+.pdf-list-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.pdf-list-loading, .pdf-list-error {
+    text-align: center;
+    padding: 20px;
+    font-size: 1.2em;
+}
+
+.pdf-list-error {
+    color: #dc3545;
+}
+
+.pdf-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px 0;
+}
+
+.pdf-card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.pdf-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.pdf-icon {
+    font-size: 2em;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.pdf-info {
+    flex-grow: 1;
+}
+
+.pdf-info h3 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 1.2em;
+}
+
+.pdf-author, .pdf-filename {
+    margin: 5px 0;
+    color: #666;
+    font-size: 0.9em;
+}
+
+.pdf-actions {
+    margin-top: 15px;
+    text-align: right;
+}
+
+.pdf-actions button {
+    background-color: #61dafb;
+    color: black;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.pdf-actions button:hover {
+    background-color: #4fa8c7;
+} 

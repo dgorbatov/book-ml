@@ -9,8 +9,18 @@ class MongoDB:
     def __init__(self, mongo_db_connection):
         self.collection = MongoClient(mongo_db_connection).client[DATABASE]['pdf_files'];
     
-    def save_pdf(self, pdf_file: PDFFile) -> int:
-        return self.collection.insert_one(pdf_file.to_dict()).inserted_id;
+    def save_pdf(self, pdf_file: PDFFile):
+        try:
+            self.collection.insert_one({
+                "_id": pdf_file.filename,
+                **pdf_file.to_dict()
+            });
+            return True;
+        except Exception as e:
+            if e.code == 11000:
+                raise Exception("PDF already exists");
+            else:
+                raise e;
     
     def get_pdf(self, title: str) -> Optional[PDFFile]:
         """Retrieve PDFFile from database by title"""
