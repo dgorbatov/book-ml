@@ -12,6 +12,7 @@ function PDFView() {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const { title } = useParams();
+    const [selectedSection, setSelectedSection] = useState(null);
 
     useEffect(() => {
         fetchPDFData();
@@ -137,6 +138,11 @@ function PDFView() {
         }
     }, [pdfData]);
 
+    // Add this function to handle section selection
+    const handleSectionClick = (index) => {
+        setSelectedSection(index);
+    };
+
     if (loading) return <div className="pdf-view-loading">Loading PDF data...</div>;
     if (error) return (
         <div className="pdf-view-error">
@@ -155,6 +161,28 @@ function PDFView() {
                     <h1>{pdfData.title}</h1>
                     {pdfData.author && <p className="author">By {pdfData.author}</p>}
                     
+                    {/* Add selected section display */}
+                    <div className="section-indicator">
+                        <label>Current Section:</label>
+                        <div className="current-section">
+                            {selectedSection !== null ? (
+                                <>
+                                    <span className="section-number">
+                                        Section {selectedSection + 1}
+                                    </span>
+                                    <button 
+                                        className="clear-section"
+                                        onClick={() => setSelectedSection(null)}
+                                    >
+                                        ×
+                                    </button>
+                                </>
+                            ) : (
+                                <span className="no-section">No section selected</span>
+                            )}
+                        </div>
+                    </div>
+
                     {/* Replace the existing page-navigation div with this simplified version */}
                     <div className="page-navigation">
                         <div className="page-selector">
@@ -216,7 +244,10 @@ function PDFView() {
                         <div 
                             key={index} 
                             id={`section-${section.start_page}`}
-                            className="book-section"
+                            className={`book-section ${selectedSection === index ? 'section-selected' : ''}`}
+                            onMouseEnter={(e) => e.currentTarget.classList.add('section-hover')}
+                            onMouseLeave={(e) => e.currentTarget.classList.remove('section-hover')}
+                            onClick={() => handleSectionClick(index)}
                         >
                             {highlightText(section.content, index)}
                         </div>

@@ -92,9 +92,21 @@
 }
 
 .book-section {
-    margin-bottom: 2em;
-    text-indent: 2em;
-    text-align: left;
+    padding: 1em;
+    margin: 0.5em 0;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.book-section:hover {
+    background-color: rgba(97, 218, 251, 0.1); /* Light blue background */
+    box-shadow: 0 0 0 2px rgba(97, 218, 251, 0.2);
+    cursor: pointer;
+}
+
+/* Make sure text remains readable when section is highlighted */
+.book-section:hover .highlight {
+    background-color: rgba(255, 235, 59, 0.7); /* Make search highlights more visible */
 }
 
 /* Scrollbar styling */
@@ -235,7 +247,77 @@
     background-color: #e0e0e0;
 }
 
-.page-button:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
+.section-indicator {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.section-indicator label {
+    display: block;
+    margin-bottom: 8px;
+    color: #666;
+    font-size: 14px;
+}
+
+.current-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.section-number {
+    font-weight: 500;
+    color: #333;
+}
+
+.no-section {
+    color: #666;
+    font-style: italic;
+}
+
+.clear-section {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    padding: 0 5px;
+    font-size: 18px;
+}
+
+.clear-section:hover {
+    color: #333;
+}
+
+.book-section {
+    padding: 1em;
+    margin: 0.5em 0;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.section-hover {
+    background-color: rgba(97, 218, 251, 0.1);
+}
+
+.section-selected {
+    background-color: rgba(97, 218, 251, 0.2);
+    box-shadow: 0 0 0 2px rgba(97, 218, 251, 0.4);
+}
+
+/* Make the section selection more prominent on hover */
+.section-selected:hover {
+    background-color: rgba(97, 218, 251, 0.3);
+}
+
+/* Ensure text remains readable in selected state */
+.section-selected .highlight {
+    background-color: rgba(255, 235, 59, 0.8);
 } 
