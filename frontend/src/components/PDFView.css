@@ -1,0 +1,241 @@
+.pdf-view-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.pdf-view-loading, .pdf-view-error {
+    text-align: center;
+    padding: 40px;
+    font-size: 1.2em;
+}
+
+.book-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    height: calc(100vh - 64px); /* Subtract header height */
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    margin-top: 0;
+}
+
+.book-info {
+    background-color: #f5f5f5;
+    padding: 20px;
+    border-right: 1px solid #ddd;
+    overflow-y: auto;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.book-details {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.back-button {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: white;
+    color: #333;
+    text-decoration: none;
+    border-radius: 4px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.back-button:hover {
+    background-color: #f8f9fa;
+}
+
+.book-details h1 {
+    font-size: 24px;
+    margin: 0 0 15px 0;
+    color: #333;
+    font-family: 'Georgia', serif;
+}
+
+.author {
+    font-style: italic;
+    color: #666;
+    margin: 0 0 20px 0;
+}
+
+.book-metadata {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
+}
+
+.book-metadata p {
+    margin: 10px 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.book-content {
+    height: 100%;
+    overflow-y: auto;
+    background-color: white;
+    position: relative;
+}
+
+.book-text {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px;
+    font-family: 'Georgia', serif;
+    line-height: 1.8;
+    color: #333;
+}
+
+.book-section {
+    margin-bottom: 2em;
+    text-indent: 2em;
+    text-align: left;
+}
+
+/* Scrollbar styling */
+.book-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.book-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.book-content::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.book-content::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Loading and error states */
+.pdf-view-loading, .pdf-view-error {
+    text-align: center;
+    padding: 40px;
+    font-size: 1.2em;
+}
+
+.pdf-view-error {
+    color: #dc3545;
+}
+
+.search-container {
+    position: sticky;
+    top: 0;
+    background-color: #f5f5f5;
+    padding: 15px;
+    margin: -15px -15px 15px -15px;
+    border-bottom: 1px solid #ddd;
+    z-index: 10;
+}
+
+.highlight {
+    background-color: rgba(255, 235, 59, 0.5); /* Light yellow with transparency */
+    border-radius: 2px;
+    padding: 0 2px;
+    margin: 0 -2px;
+    transition: background-color 0.2s ease;
+}
+
+.current-highlight {
+    background-color: #f50035; /* Brighter yellow for current selection */
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
+    font-weight: 500;
+}
+
+/* Optional hover effect */
+.highlight:hover {
+    background-color: rgba(255, 235, 59, 0.7);
+    cursor: pointer;
+}
+
+/* Make sure the content is readable on all screen sizes */
+@media (max-width: 1200px) {
+    .book-text {
+        max-width: 90%;
+    }
+}
+
+@media (max-width: 768px) {
+    .book-layout {
+        grid-template-columns: 250px 1fr;
+    }
+}
+
+/* Ensure proper spacing with the header */
+.App {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.nav-menu {
+    flex-shrink: 0; /* Prevent header from shrinking */
+}
+
+.page-navigation {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.page-selector label {
+    display: block;
+    margin-bottom: 8px;
+    color: #666;
+    font-size: 14px;
+}
+
+.page-input-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.page-input {
+    width: 60px;
+    padding: 4px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    text-align: center;
+}
+
+.page-count {
+    color: #666;
+    font-size: 14px;
+}
+
+.page-controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.page-button {
+    padding: 6px 12px;
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.page-button:hover:not(:disabled) {
+    background-color: #e0e0e0;
+}
+
+.page-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+} 

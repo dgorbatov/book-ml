@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Upload from './components/Upload';
 import PDFList from './components/PDFList';
+import PDFView from './components/PDFView';
 import './App.css';
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/upload" element={<Upload />} />
+          <Route path="/pdf/:title" element={<PDFView />} />
         </Routes>
       </div>
     </Router>

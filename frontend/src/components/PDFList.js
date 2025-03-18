@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './PDFList.css';
 
 function PDFList() {
     const [pdfs, setPdfs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetchPDFs();
@@ -19,13 +20,17 @@ function PDFList() {
             if (response.ok) {
                 setPdfs(data.pdf_files);
             } else {
-                setError('Failed to fetch PDFs');
+                setError(data.error || 'Failed to fetch PDFs');
             }
         } catch (err) {
             setError('Error connecting to server');
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleCardClick = (title) => {
+        navigate(`/pdf/${encodeURIComponent(title)}`);
     };
 
     if (loading) return <div className="pdf-list-loading">Loading PDFs...</div>;
@@ -39,7 +44,13 @@ function PDFList() {
             ) : (
                 <div className="pdf-grid">
                     {pdfs.map((pdf) => (
-                        <div key={pdf.id} className="pdf-card">
+                        <div 
+                            key={pdf.title} 
+                            className="pdf-card"
+                            onClick={() => handleCardClick(pdf.title)}
+                            role="button"
+                            tabIndex={0}
+                        >
                             <div className="pdf-icon">📄</div>
                             <div className="pdf-info">
                                 <h3>{pdf.title || 'Untitled'}</h3>
@@ -49,11 +60,6 @@ function PDFList() {
                                 <p className="pdf-filename">
                                     {pdf.filename}
                                 </p>
-                            </div>
-                            <div className="pdf-actions">
-                                <button onClick={() => window.location.href = `/pdf/${pdf.id}`}>
-                                    View Details
-                                </button>
                             </div>
                         </div>
                     ))}
