@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import './PDFView.css';
+import ReactMarkdown from 'react-markdown';
 
 function PDFView() {
     const [pdfData, setPdfData] = useState(null);
@@ -250,7 +251,9 @@ function PDFView() {
                         {answer && (
                             <div className="answer-container">
                                 <h4>Answer:</h4>
-                                <p>{answer}</p>
+                                <ReactMarkdown>
+                                    {answer}
+                                </ReactMarkdown>
                             </div>
                         )}
                     </div>

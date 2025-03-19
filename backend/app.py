@@ -94,7 +94,8 @@ def ask_question():
     answer = query_question(question, pdf_file.file_store_id, pdf_file.vector_store_id);
 
     return jsonify({
-        "answer": answer
+        "answer": answer[0],
+        "annotations": answer[1]
     })
 
 

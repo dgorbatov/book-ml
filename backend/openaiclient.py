@@ -17,6 +17,7 @@ def storeFile(file: PDFFile, filename) -> (str, str):
             file.text_content,
             "text"
         ),
+        rewrite_query=True,
         purpose="assistants"
     )
 
@@ -38,9 +39,28 @@ def query_question(question: str, file_store_id: str, vector_store_id: str) -> s
         tools=[{
             "type": "file_search",
             "vector_store_ids": [vector_store_id]
-        }]
+        }],
+        include=["file_search_call.results"]
     )
 
-    print(response)
+    message = ""
+    annotations = "";
+    for i in response.output:
+        if i.type == "file_search_call":
+            annotations = i.results[0].text
+        if i.type == "message":
+            message = i.content[0].text
+            # annotations = i.content[0].annotations
 
-    return response.output[1].content[0].text
+
+    # annotations = response.output[1].content[0].annotations
+    
+    # Get top-k retrieved filenames
+    # retrieved_files = set([result.filename for result in annotations])
+
+    # print(f'Files used: {retrieved_files}')
+    # print(annotations)
+    # print('Response:')
+    # print(response.output[1].content[0].text) # 0 being the filesearch call
+
+    return (message, annotations)
