@@ -4,6 +4,23 @@ import os
 import PyPDF2
 from file import PDFFile
 from database import MongoDB
+from dotenv import load_dotenv
+from openai import OpenAI
+
+
+load_dotenv("./vars.env")
+
+OPEN_AI_API = os.getenv('OPEN_AI_API')
+
+client = OpenAI(api_key=OPEN_AI_API)
+
+response = client.embeddings.create(
+    input="Your text string goes here",
+    model="text-embedding-3-small"
+)
+
+print(response.data[0].embedding)
+
 
 app = Flask(__name__)
 CORS(app)  # Allow requests from frontend
