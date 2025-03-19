@@ -3,7 +3,7 @@ from flask_cors import CORS
 import os
 from file import PDFFile
 from database import MongoDB
-from openaiclient import storeFile
+from openaiclient import storeFile, query_question
 from PyPDF2 import PdfReader
 from io import BytesIO
 app = Flask(__name__)
@@ -78,6 +78,25 @@ def get_all_pdfs():
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route('/api/askquestion', methods=['GET'])
+def ask_question():
+    title = request.args.get('title')
+    question = request.args.get('question')
+
+    if title is None or question is None:
+        return jsonify({"error": "Title and question are required"}), 400
+
+    pdf_file = db.get_pdf(title)
+    if pdf_file is None:
+        return jsonify({"error": "PDF not found"}), 404
+
+    answer = query_question(question, pdf_file.file_store_id, pdf_file.vector_store_id);
+
+    return jsonify({
+        "answer": answer
+    })
+
 
 if __name__ == '__main__':
     os.environ["FLASK_ENV"] = "development"

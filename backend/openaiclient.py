@@ -31,3 +31,16 @@ def storeFile(file: PDFFile, filename) -> (str, str):
 
     return (fileResponse.id, vector_store.id)
 
+def query_question(question: str, file_store_id: str, vector_store_id: str) -> str:
+    response = client.responses.create(
+        model="gpt-4o-mini",
+        input=question,
+        tools=[{
+            "type": "file_search",
+            "vector_store_ids": [vector_store_id]
+        }]
+    )
+
+    print(response)
+
+    return response.output[1].content[0].text

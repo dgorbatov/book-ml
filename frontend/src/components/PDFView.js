@@ -9,6 +9,9 @@ function PDFView() {
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [currentResult, setCurrentResult] = useState(-1);
+    const [question, setQuestion] = useState('');
+    const [answer, setAnswer] = useState('');
+    const [askingQuestion, setAskingQuestion] = useState(false);
     const { title } = useParams();
 
     useEffect(() => {
@@ -96,6 +99,29 @@ function PDFView() {
         }
     };
 
+    const handleQuestionSubmit = async (e) => {
+        e.preventDefault();
+        if (!question.trim()) return;
+        
+        setAskingQuestion(true);
+        setAnswer('');
+        
+        try {
+            const response = await fetch(`/api/askquestion?title=${encodeURIComponent(title)}&question=${encodeURIComponent(question)}`);
+            const data = await response.json();
+            
+            if (response.ok) {
+                setAnswer(data.answer);
+            } else {
+                setAnswer('Error: ' + (data.error || 'Failed to get answer'));
+            }
+        } catch (err) {
+            setAnswer('Error connecting to server');
+        } finally {
+            setAskingQuestion(false);
+        }
+    };
+
     if (loading) return <div className="pdf-view-loading">Loading PDF data...</div>;
     if (error) return (
         <div className="pdf-view-error">
@@ -140,9 +166,33 @@ function PDFView() {
                         )}
                     </div>
 
+                    <div className="question-container">
+                        <form onSubmit={handleQuestionSubmit}>
+                            <input
+                                type="text"
+                                placeholder="Ask a question about the book..."
+                                value={question}
+                                onChange={(e) => setQuestion(e.target.value)}
+                                className="question-input"
+                            />
+                            <button 
+                                type="submit" 
+                                className="question-submit"
+                                disabled={askingQuestion || !question.trim()}
+                            >
+                                {askingQuestion ? 'Asking...' : 'Ask'}
+                            </button>
+                        </form>
+                        {answer && (
+                            <div className="answer-container">
+                                <h4>Answer:</h4>
+                                <p>{answer}</p>
+                            </div>
+                        )}
+                    </div>
+
                     <div className="book-metadata">
                         <p>Filename: {pdfData.filename}</p>
-                        <p>Sections: {pdfData.sections.length}</p>
                     </div>
                 </div>
             </div>
@@ -150,17 +200,9 @@ function PDFView() {
             {/* Right side with scrollable book content */}
             <div className="book-content">
                 <div className="book-text">
-                    {pdfData.sections.map((section, index) => (
-                        <div 
-                            key={index} 
-                            id={`section-${section.start_page}`}
-                            className={`book-section ${index === currentResult ? 'section-selected' : ''}`}
-                            onMouseEnter={(e) => e.currentTarget.classList.add('section-hover')}
-                            onMouseLeave={(e) => e.currentTarget.classList.remove('section-hover')}
-                        >
-                            {highlightText(section.content)}
-                        </div>
-                    ))}
+                    <div className="text-content">
+                        {highlightText(pdfData.text_content)}
+                    </div>
                 </div>
             </div>
         </div>
