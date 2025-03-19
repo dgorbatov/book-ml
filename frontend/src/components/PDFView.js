@@ -13,6 +13,7 @@ function PDFView() {
     const [answer, setAnswer] = useState('');
     const [askingQuestion, setAskingQuestion] = useState(false);
     const { title } = useParams();
+    const [selectedText, setSelectedText] = useState('');
 
     useEffect(() => {
         fetchPDFData();
@@ -122,6 +123,48 @@ function PDFView() {
         }
     };
 
+    const handleExplainSelection = async () => {
+        if (!selectedText) return;
+        
+        setAskingQuestion(true);
+        setAnswer('');
+        const questionText = `Explain this text: "${selectedText}"`;
+        setQuestion(questionText);
+        
+        try {
+            const response = await fetch(`/api/askquestion?title=${encodeURIComponent(title)}&question=${encodeURIComponent(questionText)}`);
+            const data = await response.json();
+            
+            if (response.ok) {
+                setAnswer(data.answer);
+            } else {
+                setAnswer('Error: ' + (data.error || 'Failed to get answer'));
+            }
+        } catch (err) {
+            setAnswer('Error connecting to server');
+        } finally {
+            setAskingQuestion(false);
+        }
+    };
+
+    const handleTextSelection = () => {
+        const selection = window.getSelection();
+        const text = selection.toString().trim();
+        if (text) {
+            setSelectedText(text);
+        }
+    };
+
+    const addToSearch = () => {
+        if (selectedText) {
+            setSearchTerm(prevTerm => {
+                const newTerm = prevTerm ? `${prevTerm} ${selectedText}` : selectedText;
+                setSelectedText(''); // Clear selection after adding
+                return newTerm;
+            });
+        }
+    };
+
     if (loading) return <div className="pdf-view-loading">Loading PDF data...</div>;
     if (error) return (
         <div className="pdf-view-error">
@@ -157,6 +200,27 @@ function PDFView() {
                                 </button>
                             )}
                         </div>
+                        {selectedText && (
+                            <div className="selection-actions">
+                                <span className="selected-text">
+                                    "{selectedText.substring(0, 50)}
+                                    {selectedText.length > 50 ? '...' : ''}"
+                                </span>
+                                <button 
+                                    onClick={handleExplainSelection}
+                                    className="explain-button"
+                                    disabled={askingQuestion}
+                                >
+                                    {askingQuestion ? 'Explaining...' : 'Explain'}
+                                </button>
+                                <button 
+                                    onClick={() => setSelectedText('')}
+                                    className="clear-selection"
+                                >
+                                    ×
+                                </button>
+                            </div>
+                        )}
                         {searchResults.length > 0 && (
                             <div className="search-navigation">
                                 <button onClick={() => navigateResults('prev')}>↑</button>
@@ -200,7 +264,10 @@ function PDFView() {
             {/* Right side with scrollable book content */}
             <div className="book-content">
                 <div className="book-text">
-                    <div className="text-content">
+                    <div 
+                        className="text-content"
+                        onMouseUp={handleTextSelection}
+                    >
                         {highlightText(pdfData.text_content)}
                     </div>
                 </div>
