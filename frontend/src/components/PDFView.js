@@ -9,10 +9,7 @@ function PDFView() {
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [currentResult, setCurrentResult] = useState(-1);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
     const { title } = useParams();
-    const [selectedSection, setSelectedSection] = useState(null);
 
     useEffect(() => {
         fetchPDFData();
@@ -21,23 +18,18 @@ function PDFView() {
     // Search functionality
     useEffect(() => {
         if (searchTerm && pdfData) {
-            const results = [];
-            pdfData.sections.forEach((section, sectionIndex) => {
-                const regex = new RegExp(searchTerm, 'gi');
-
-                let index = 1;
-                let match;
-                while ((match = regex.exec(section.content)) !== null) {
-                    results.push({
-                        sectionIndex,
-                        index: index,
-                        text: match[0]
-                    });
-                    index++;
-                }
-            })
-
-            console.log(results);
+            const regex = new RegExp(searchTerm, 'gi');
+            let results = [];
+            let match;
+            let index = 1;
+            
+            while ((match = regex.exec(pdfData.text_content)) !== null) {
+                results.push({
+                    index: index,
+                    text: match[0]
+                });
+                index++;
+            }
 
             setSearchResults(results);
             setCurrentResult(0);
@@ -61,35 +53,23 @@ function PDFView() {
             newIndex = currentResult - 1 < 0 ? searchResults.length - 1 : currentResult - 1;
         }
 
-        let oldResult = currentResult;
         setCurrentResult(newIndex);
-
-        // Unhilight previouse index
-        document.getElementById(searchResults[oldResult].sectionIndex + ":" + searchResults[oldResult].index).classList.remove('current-highlight');   
-        const element = document.getElementById(searchResults[newIndex].sectionIndex + ":" + searchResults[newIndex].index)
-        element.classList.add('current-highlight');
-        element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     };
 
-    // Highlight search results in text
-    const highlightText = (text, sectionIndex) => {
+    const highlightText = (text) => {
         if (!searchTerm) return text;
 
         const parts = text.split(new RegExp(`(${searchTerm})`, 'gi'));
-        
         let index = 0;
 
         return parts.map((part, i) => {
             if (part.toLowerCase() === searchTerm.toLowerCase()) {
-                const isCurrentResult = searchResults[currentResult]?.sectionIndex === sectionIndex &&
-                    text.indexOf(part) === searchResults[currentResult]?.position;
-
-                ++index;
+                index++;
                 return (
                     <span 
                         key={i} 
-                        id={sectionIndex + ":" + index}
-                        className={`highlight ${isCurrentResult ? 'current-highlight' : ''}`}
+                        id={index.toString()}
+                        className={`highlight ${index === searchResults[currentResult]?.index ? 'current-highlight' : ''}`}
                     >
                         {part}
                     </span>
@@ -116,33 +96,6 @@ function PDFView() {
         }
     };
 
-    const handlePageChange = (event) => {
-        const page = parseInt(event.target.value);
-        if (page && page > 0 && page <= totalPages) {
-            setCurrentPage(page);
-            // Find the section that contains this page
-            const section = pdfData.sections.find(
-                section => section.start_page <= page && section.end_page >= page
-            );
-            if (section) {
-                const element = document.getElementById(`section-${section.start_page}`);
-                element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        }
-    };
-
-    useEffect(() => {
-        if (pdfData && pdfData.sections.length > 0) {
-            const maxPage = Math.max(...pdfData.sections.map(s => s.end_page));
-            setTotalPages(maxPage);
-        }
-    }, [pdfData]);
-
-    // Add this function to handle section selection
-    const handleSectionClick = (index) => {
-        setSelectedSection(index);
-    };
-
     if (loading) return <div className="pdf-view-loading">Loading PDF data...</div>;
     if (error) return (
         <div className="pdf-view-error">
@@ -154,55 +107,12 @@ function PDFView() {
 
     return (
         <div className="book-layout">
-            {/* Left sidebar with book info */}
             <div className="book-info">
                 <Link to="/" className="back-button">← Back to List</Link>
                 <div className="book-details">
                     <h1>{pdfData.title}</h1>
                     {pdfData.author && <p className="author">By {pdfData.author}</p>}
-                    
-                    {/* Add selected section display */}
-                    <div className="section-indicator">
-                        <label>Current Section:</label>
-                        <div className="current-section">
-                            {selectedSection !== null ? (
-                                <>
-                                    <span className="section-number">
-                                        Section {selectedSection + 1}
-                                    </span>
-                                    <button 
-                                        className="clear-section"
-                                        onClick={() => setSelectedSection(null)}
-                                    >
-                                        ×
-                                    </button>
-                                </>
-                            ) : (
-                                <span className="no-section">No section selected</span>
-                            )}
-                        </div>
-                    </div>
 
-                    {/* Replace the existing page-navigation div with this simplified version */}
-                    <div className="page-navigation">
-                        <div className="page-selector">
-                            <label htmlFor="page-input">Go to page:</label>
-                            <div className="page-input-container">
-                                <input
-                                    id="page-input"
-                                    type="number"
-                                    min="1"
-                                    max={totalPages}
-                                    value={currentPage}
-                                    onChange={handlePageChange}
-                                    className="page-input"
-                                />
-                                <span className="page-count">of {totalPages}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Search controls */}
                     <div className="search-container">
                         <div className="search-input-wrapper">
                             <input
@@ -244,12 +154,11 @@ function PDFView() {
                         <div 
                             key={index} 
                             id={`section-${section.start_page}`}
-                            className={`book-section ${selectedSection === index ? 'section-selected' : ''}`}
+                            className={`book-section ${index === currentResult ? 'section-selected' : ''}`}
                             onMouseEnter={(e) => e.currentTarget.classList.add('section-hover')}
                             onMouseLeave={(e) => e.currentTarget.classList.remove('section-hover')}
-                            onClick={() => handleSectionClick(index)}
                         >
-                            {highlightText(section.content, index)}
+                            {highlightText(section.content)}
                         </div>
                     ))}
                 </div>

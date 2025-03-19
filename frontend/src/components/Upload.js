@@ -82,17 +82,6 @@ function Upload() {
                     <h3>PDF Information</h3>
                     <p><strong>Title:</strong> {pdfData.title || 'Not available'}</p>
                     <p><strong>Author:</strong> {pdfData.author || 'Not available'}</p>
-                    <p><strong>Number of Paragraphs:</strong> {pdfData.sections.length}</p>
-                    
-                    <div className="paragraphs-list">
-                        <h4>Paragraphs</h4>
-                        {pdfData.sections.map((section, index) => (
-                            <details key={index} className="paragraph-detail">
-                                <summary>{index + 1}</summary>
-                                <p className="paragraph-content">{section.content}</p>
-                            </details>
-                        ))}
-                    </div>
                 </div>
             )}
         </div>

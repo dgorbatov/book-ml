@@ -1,29 +1,13 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
-import PyPDF2
 from file import PDFFile
 from database import MongoDB
-from dotenv import load_dotenv
-from openai import OpenAI
-
-
-load_dotenv("./vars.env")
-
-OPEN_AI_API = os.getenv('OPEN_AI_API')
-
-client = OpenAI(api_key=OPEN_AI_API)
-
-response = client.embeddings.create(
-    input="Your text string goes here",
-    model="text-embedding-3-small"
-)
-
-print(response.data[0].embedding)
-
-
+from openaiclient import storeFile
+from PyPDF2 import PdfReader
+from io import BytesIO
 app = Flask(__name__)
-CORS(app)  # Allow requests from frontend
+CORS(app) 
 
 db = MongoDB("mongodb://localhost:27017/")
 
@@ -48,10 +32,21 @@ def upload():
     if file.filename == '':
         return jsonify({"error": "No file selected"}), 400
 
+
     try:
-        pdf_file = PDFFile.extract_information_from_pdf(file)
+        doc = PdfReader(file)
+        pdf_file = PDFFile.extract_information_from_pdf(doc, file.filename, "", "")
+
+        file_store_id, vector_store_id = storeFile(pdf_file, file.filename)
+
+        pdf_file.file_store_id = file_store_id
+        pdf_file.vector_store_id = vector_store_id
+
+        print(file_store_id, ":", vector_store_id);
+
         db.save_pdf(pdf_file)
     except Exception as e:
+        print(e);
         return jsonify({"error": str(e)}), 500
 
     return jsonify({
