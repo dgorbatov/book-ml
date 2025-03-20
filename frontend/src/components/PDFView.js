@@ -60,13 +60,22 @@ function PDFView() {
 
     const handleQuestionSubmit = async (e) => {
         e.preventDefault();
-        if (!question.trim()) return;
+        if (!question.trim() && selectedText.length === 0) return;
         
         setAskingQuestion(true);
         setAnswer('');
         
         try {
-            const response = await fetch(`/api/askquestion?title=${encodeURIComponent(title)}&question=${encodeURIComponent(question)}`);
+            let prompt = "Here is a selection of quotes from this book. Please use them and other context from the book to answer the question at the bottom:";
+            prompt += selectedText.join('\n');
+
+            if (question.length > 0) {
+                prompt += question;
+            } else {
+                prompt += "Explain the content and the context of the quotes.";
+            }
+
+            const response = await fetch(`/api/askquestion?title=${encodeURIComponent(title)}&question=${encodeURIComponent(prompt)}`);
             const data = await response.json();
             
             if (response.ok) {
@@ -75,6 +84,9 @@ function PDFView() {
             } else {
                 setAnswer('Error: ' + (data.error || 'Failed to get answer'));
             }
+
+            setQuestion("");
+            setSelectedText([]);
         } catch (err) {
             setAnswer('Error connecting to server');
         } finally {
@@ -94,34 +106,6 @@ function PDFView() {
         }
     }, [annotations]);
 
-    const handleExplainSelection = async () => {
-        if (!selectedText) return;
-        
-        setAskingQuestion(true);
-        setAnswer('');
-        setAnnotations([]); // Clear previous annotations
-
-        const questionText = `The following is a selection of quotes from this book. Please explain them and their context: "${selectedText.join(',')}"`;
-        setSelectedText([]);
-        
-        try {
-            const response = await fetch(`/api/askquestion?title=${encodeURIComponent(title)}&question=${encodeURIComponent(questionText)}`);
-            const data = await response.json();
-            
-            if (response.ok) {
-                setAnswer(data.answer);
-                if (data.annotations) {
-                    setAnnotations(data.annotations);
-                }
-            } else {
-                setAnswer('Error: ' + (data.error || 'Failed to get answer'));
-            }
-        } catch (err) {
-            setAnswer('Error connecting to server');
-        } finally {
-            setAskingQuestion(false);
-        }
-    };
 
     const handleTextSelection = () => {
         const selection = window.getSelection();
@@ -155,32 +139,18 @@ function PDFView() {
                                 selectedText.map((text, index) => {
                                     return (
                                         <div className="selection" key={index}>
-                                            <span key={index} className="selected-text">
+                                            <p key={index} className="selected-text" onClick={() => {
+                                                setSelectedText(prevSelected => 
+                                                    prevSelected.filter((_, i) => i !== index)
+                                                );
+                                            }}>
                                                     "{text.substring(0, 50)}
                                                     {text.length > 50 ? '...' : ''}"
-                                            </span>
-                                            <button 
-                                                onClick={() => {
-                                                    setSelectedText(prevSelected => 
-                                                        prevSelected.filter((_, i) => i !== index)
-                                                    );
-                                                }}
-                                                className="clear-selection"
-                                            >
-                                                ×
-                                            </button>
+                                            </p>
                                         </div>
                                     )
                                 })
                             }
-
-                            <button 
-                                onClick={handleExplainSelection}
-                                className="explain-button"
-                                disabled={askingQuestion}
-                            >
-                                {askingQuestion ? 'Explaining...' : 'Explain'}
-                            </button>
                         </div>
                     </div>
 
@@ -196,7 +166,7 @@ function PDFView() {
                             <button 
                                 type="submit" 
                                 className="question-submit"
-                                disabled={askingQuestion || !question.trim()}
+                                disabled={askingQuestion || (!question.trim() && selectedText.length === 0)}
                             >
                                 {askingQuestion ? 'Asking...' : 'Ask'}
                             </button>
