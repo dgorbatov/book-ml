@@ -393,3 +393,33 @@
 
 .markdown-content blockquote {
 }
+
+.annotation-highlight {
+    background-color: #ffd700;
+    padding: 2px 0;
+    border-radius: 2px;
+    transition: background-color 0.2s;
+    scroll-margin: 100px;
+}
+
+.annotation-highlight:hover {
+    background-color: #ffed4a;
+}
+
+/* Add this to the answer container to show which text was referenced */
+.answer-container {
+    position: relative;
+}
+
+.annotations-list {
+    margin-top: 10px;
+    font-size: 0.9em;
+    color: #666;
+}
+
+.annotation-reference {
+    cursor: pointer;
+    color: #007bff;
+    text-decoration: underline;
+    margin-right: 10px;
+}

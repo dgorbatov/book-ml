@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import './PDFView.css';
 import ReactMarkdown from 'react-markdown';
@@ -7,98 +7,55 @@ function PDFView() {
     const [pdfData, setPdfData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [searchResults, setSearchResults] = useState([]);
-    const [currentResult, setCurrentResult] = useState(-1);
     const [question, setQuestion] = useState('');
     const [answer, setAnswer] = useState('');
     const [askingQuestion, setAskingQuestion] = useState(false);
     const { title } = useParams();
-    const [selectedText, setSelectedText] = useState('');
+    const [selectedText, setSelectedText] = useState([]);
+    const [annotations, setAnnotations] = useState("");
 
+    // Fetch PDF Data
     useEffect(() => {
-        fetchPDFData();
+        const fetchData = async () => {
+            try {
+                const response = await fetch(`/api/get_pdf?title=${encodeURIComponent(title)}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    setPdfData(data.pdf_data);
+                } else {
+                    setError(data.error || 'Failed to fetch PDF data');
+                }
+            } catch (err) {
+                setError('Error connecting to server');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
     }, [title]);
 
-    // Search functionality
-    useEffect(() => {
-        if (searchTerm && pdfData) {
-            const regex = new RegExp(searchTerm, 'gi');
-            let results = [];
-            let match;
-            let index = 1;
-            
-            while ((match = regex.exec(pdfData.text_content)) !== null) {
-                results.push({
-                    index: index,
-                    text: match[0]
-                });
-                index++;
-            }
-
-            setSearchResults(results);
-            setCurrentResult(0);
-        } else {
-            setSearchResults([]);
-            setCurrentResult(-1);
-        }
-    }, [searchTerm, pdfData]);
-
-    const handleSearch = (e) => {
-        setSearchTerm(e.target.value);
-    };
-
-    const navigateResults = (direction) => {
-        if (searchResults.length === 0) return;
-        
-        let newIndex;
-        if (direction === 'next') {
-            newIndex = currentResult + 1 >= searchResults.length ? 0 : currentResult + 1;
-        } else {
-            newIndex = currentResult - 1 < 0 ? searchResults.length - 1 : currentResult - 1;
-        }
-
-        setCurrentResult(newIndex);
-    };
 
     const highlightText = (text) => {
-        if (!searchTerm) return text;
+        if (annotations.length === 0) return text;
+    
+        // Split the text where the annotation appears
+        const parts = text.split(annotations);
 
-        const parts = text.split(new RegExp(`(${searchTerm})`, 'gi'));
-        let index = 0;
 
-        return parts.map((part, i) => {
-            if (part.toLowerCase() === searchTerm.toLowerCase()) {
-                index++;
-                return (
-                    <span 
-                        key={i} 
-                        id={index.toString()}
-                        className={`highlight ${index === searchResults[currentResult]?.index ? 'current-highlight' : ''}`}
-                    >
-                        {part}
-                    </span>
-                );
-            }
-            return part;
-        });
-    };
-
-    const fetchPDFData = async () => {
-        try {
-            const response = await fetch(`/api/get_pdf?title=${encodeURIComponent(title)}`);
-            const data = await response.json();
-            
-            if (response.ok) {
-                setPdfData(data.pdf_data);
-            } else {
-                setError(data.error || 'Failed to fetch PDF data');
-            }
-        } catch (err) {
-            setError('Error connecting to server');
-        } finally {
-            setLoading(false);
-        }
+        return (
+            <div>
+                {parts[0]}
+                <span 
+                    id={`annotation`}
+                    className="annotation-highlight"
+                >
+                    {annotations}
+                </span>
+                {parts[1]}
+            </div>
+        );
     };
 
     const handleQuestionSubmit = async (e) => {
@@ -114,6 +71,7 @@ function PDFView() {
             
             if (response.ok) {
                 setAnswer(data.answer);
+                setAnnotations(data.annotations);
             } else {
                 setAnswer('Error: ' + (data.error || 'Failed to get answer'));
             }
@@ -124,13 +82,27 @@ function PDFView() {
         }
     };
 
+    useEffect(() => {
+        const annotation = document.getElementById('annotation');
+        console.log(annotation);
+
+        if (annotation) {
+            annotation.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+    }, [annotations]);
+
     const handleExplainSelection = async () => {
         if (!selectedText) return;
         
         setAskingQuestion(true);
         setAnswer('');
-        const questionText = `Explain this text: "${selectedText}"`;
-        setQuestion(questionText);
+        setAnnotations([]); // Clear previous annotations
+
+        const questionText = `The following is a selection of quotes from this book. Please explain them and their context: "${selectedText.join(',')}"`;
+        setSelectedText([]);
         
         try {
             const response = await fetch(`/api/askquestion?title=${encodeURIComponent(title)}&question=${encodeURIComponent(questionText)}`);
@@ -138,6 +110,9 @@ function PDFView() {
             
             if (response.ok) {
                 setAnswer(data.answer);
+                if (data.annotations) {
+                    setAnnotations(data.annotations);
+                }
             } else {
                 setAnswer('Error: ' + (data.error || 'Failed to get answer'));
             }
@@ -151,18 +126,9 @@ function PDFView() {
     const handleTextSelection = () => {
         const selection = window.getSelection();
         const text = selection.toString().trim();
-        if (text) {
-            setSelectedText(text);
-        }
-    };
 
-    const addToSearch = () => {
-        if (selectedText) {
-            setSearchTerm(prevTerm => {
-                const newTerm = prevTerm ? `${prevTerm} ${selectedText}` : selectedText;
-                setSelectedText(''); // Clear selection after adding
-                return newTerm;
-            });
+        if (text) {
+            setSelectedText(prevSelected => [...prevSelected, text]);
         }
     };
 
@@ -184,51 +150,38 @@ function PDFView() {
                     {pdfData.author && <p className="author">By {pdfData.author}</p>}
 
                     <div className="search-container">
-                        <div className="search-input-wrapper">
-                            <input
-                                type="text"
-                                placeholder="Search in book..."
-                                value={searchTerm}
-                                onChange={handleSearch}
-                                className="search-input"
-                            />
-                            {searchTerm && (
-                                <button 
-                                    className="clear-search"
-                                    onClick={() => setSearchTerm('')}
-                                >
-                                    ×
-                                </button>
-                            )}
+                        <div className="selection-container">
+                            {
+                                selectedText.map((text, index) => {
+                                    return (
+                                        <div className="selection" key={index}>
+                                            <span key={index} className="selected-text">
+                                                    "{text.substring(0, 50)}
+                                                    {text.length > 50 ? '...' : ''}"
+                                            </span>
+                                            <button 
+                                                onClick={() => {
+                                                    setSelectedText(prevSelected => 
+                                                        prevSelected.filter((_, i) => i !== index)
+                                                    );
+                                                }}
+                                                className="clear-selection"
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
+                                    )
+                                })
+                            }
+
+                            <button 
+                                onClick={handleExplainSelection}
+                                className="explain-button"
+                                disabled={askingQuestion}
+                            >
+                                {askingQuestion ? 'Explaining...' : 'Explain'}
+                            </button>
                         </div>
-                        {selectedText && (
-                            <div className="selection-actions">
-                                <span className="selected-text">
-                                    "{selectedText.substring(0, 50)}
-                                    {selectedText.length > 50 ? '...' : ''}"
-                                </span>
-                                <button 
-                                    onClick={handleExplainSelection}
-                                    className="explain-button"
-                                    disabled={askingQuestion}
-                                >
-                                    {askingQuestion ? 'Explaining...' : 'Explain'}
-                                </button>
-                                <button 
-                                    onClick={() => setSelectedText('')}
-                                    className="clear-selection"
-                                >
-                                    ×
-                                </button>
-                            </div>
-                        )}
-                        {searchResults.length > 0 && (
-                            <div className="search-navigation">
-                                <button onClick={() => navigateResults('prev')}>↑</button>
-                                <span>{currentResult + 1} of {searchResults.length}</span>
-                                <button onClick={() => navigateResults('next')}>↓</button>
-                            </div>
-                        )}
                     </div>
 
                     <div className="question-container">
