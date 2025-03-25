@@ -6,6 +6,9 @@ from database import MongoDB
 from openaiclient import storeFile, query_question
 from PyPDF2 import PdfReader
 from io import BytesIO
+import sys
+import traceback
+
 app = Flask(__name__)
 CORS(app) 
 
@@ -46,6 +49,9 @@ def upload():
 
         db.save_pdf(pdf_file)
     except Exception as e:
+        print("Stack Trace:")
+        traceback.print_exc(file=sys.stderr)
+
         print(e);
         return jsonify({"error": str(e)}), 500
 

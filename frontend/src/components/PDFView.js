@@ -2,6 +2,8 @@ import React, { useState, useEffect, use } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import './PDFView.css';
 import ReactMarkdown from 'react-markdown';
+import BookContent from './BookContent';
+import ChatPanel from './ChatPanel';
 
 function PDFView() {
     const [pdfData, setPdfData] = useState(null);
@@ -13,6 +15,7 @@ function PDFView() {
     const { title } = useParams();
     const [selectedText, setSelectedText] = useState([]);
     const [annotations, setAnnotations] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
 
     // Fetch PDF Data
     useEffect(() => {
@@ -35,28 +38,6 @@ function PDFView() {
 
         fetchData();
     }, [title]);
-
-
-    const highlightText = (text) => {
-        if (annotations.length === 0) return text;
-    
-        // Split the text where the annotation appears
-        const parts = text.split(annotations);
-
-
-        return (
-            <div>
-                {parts[0]}
-                <span 
-                    id={`annotation`}
-                    className="annotation-highlight"
-                >
-                    {annotations}
-                </span>
-                {parts[1]}
-            </div>
-        );
-    };
 
     const handleQuestionSubmit = async (e) => {
         e.preventDefault();
@@ -94,19 +75,6 @@ function PDFView() {
         }
     };
 
-    useEffect(() => {
-        const annotation = document.getElementById('annotation');
-        console.log(annotation);
-
-        if (annotation) {
-            annotation.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center'
-            });
-        }
-    }, [annotations]);
-
-
     const handleTextSelection = () => {
         const selection = window.getSelection();
         const text = selection.toString().trim();
@@ -133,6 +101,17 @@ function PDFView() {
                     <h1>{pdfData.title}</h1>
                     {pdfData.author && <p className="author">By {pdfData.author}</p>}
 
+                    <div className="page-navigation">
+                        <input
+                            type="number"
+                            name="page"
+                            min="1"
+                            placeholder="Page #"
+                            className="page-input"
+                            onChange={(e) => setCurrentPage(parseInt(e.target.value))}
+                        />
+                    </div>
+
                     <div className="search-container">
                         <div className="selection-container">
                             {
@@ -154,32 +133,15 @@ function PDFView() {
                         </div>
                     </div>
 
-                    <div className="question-container">
-                        <form onSubmit={handleQuestionSubmit}>
-                            <input
-                                type="text"
-                                placeholder="Ask a question about the book..."
-                                value={question}
-                                onChange={(e) => setQuestion(e.target.value)}
-                                className="question-input"
-                            />
-                            <button 
-                                type="submit" 
-                                className="question-submit"
-                                disabled={askingQuestion || (!question.trim() && selectedText.length === 0)}
-                            >
-                                {askingQuestion ? 'Asking...' : 'Ask'}
-                            </button>
-                        </form>
-                        {answer && (
-                            <div className="answer-container">
-                                <h4>Answer:</h4>
-                                <ReactMarkdown>
-                                    {answer}
-                                </ReactMarkdown>
-                            </div>
-                        )}
-                    </div>
+                    <ChatPanel 
+                        selectedText={selectedText}
+                        setSelectedText={setSelectedText}
+                        question={question}
+                        setQuestion={setQuestion}
+                        answer={answer}
+                        askingQuestion={askingQuestion}
+                        handleQuestionSubmit={handleQuestionSubmit}
+                    />
 
                     <div className="book-metadata">
                         <p>Filename: {pdfData.filename}</p>
@@ -187,17 +149,12 @@ function PDFView() {
                 </div>
             </div>
 
-            {/* Right side with scrollable book content */}
-            <div className="book-content">
-                <div className="book-text">
-                    <div 
-                        className="text-content"
-                        onMouseUp={handleTextSelection}
-                    >
-                        {highlightText(pdfData.text_content)}
-                    </div>
-                </div>
-            </div>
+            <BookContent 
+                text={pdfData.text_content}
+                annotations={annotations}
+                handleTextSelection={handleTextSelection}
+                currentPage={currentPage}
+            />
         </div>
     );
 }

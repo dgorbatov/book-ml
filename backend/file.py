@@ -58,7 +58,7 @@ class PDFFile:
         for page in doc.pages:
             page_text = page.extract_text()
             if page_text.strip():  # Only add non-empty pages
-                full_text += page_text + "\n"
+                full_text += "<br>" + page_text;
 
         return_file.text_content = full_text
         return return_file
