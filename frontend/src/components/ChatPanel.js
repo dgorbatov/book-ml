@@ -1,8 +1,7 @@
 import React from 'react';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import './ChatPanel.css';
-
 
 function ChatPanel({ 
     selectedText, 
@@ -10,13 +9,15 @@ function ChatPanel({
     setAnnotations,
     title
 }) {
-    const [question, setQuestion] = useState('');
     const [answer, setAnswer] = useState('');
     const [askingQuestion, setAskingQuestion] = useState(false);
+    const [isPopupOpen, setIsPopupOpen] = useState(false);
+    const question = useRef('');
 
     const handleQuestionSubmit = async (e) => {
         e.preventDefault();
-        if (!question.trim() && selectedText.length === 0) return;
+        const currQuestion = question.current.value;
+        if (!currQuestion.trim() && selectedText.length === 0) return;
         
         setAskingQuestion(true);
         setAnswer('');
@@ -25,8 +26,8 @@ function ChatPanel({
             let prompt = "Here is a selection of quotes from this book. Please use them and other context from the book to answer the question at the bottom:";
             prompt += selectedText.join('\n');
 
-            if (question.length > 0) {
-                prompt += question;
+            if (currQuestion.length > 0) {
+                prompt += currQuestion;
             } else {
                 prompt += "Explain the content and the context of the quotes.";
             }
@@ -41,7 +42,7 @@ function ChatPanel({
                 setAnswer('Error: ' + (data.error || 'Failed to get answer'));
             }
 
-            setQuestion("");
+            question.current.value = '';
             setSelectedText([]);
         } catch (err) {
             setAnswer('Error connecting to server');
@@ -50,25 +51,25 @@ function ChatPanel({
         }
     };
 
-    return (
-        <div className="chat-panel">
-            <div className="question-container">
-                <form onSubmit={handleQuestionSubmit}>
-                    <input
-                        type="text"
-                        placeholder="Ask a question about the book..."
-                        value={question}
-                        onChange={(e) => setQuestion(e.target.value)}
-                        className="question-input"
-                    />
-                    <button 
-                        type="submit" 
-                        className="question-submit"
-                        disabled={askingQuestion || (!question.trim() && selectedText.length === 0)}
-                    >
-                        {askingQuestion ? 'Asking...' : 'Ask'}
-                    </button>
-                </form>
+    const ChatInterface = ({ isPopup = false }) => (
+        <div className={isPopup ? "chat-popup-content" : "chat-panel"}>
+            <div className="selected-quotes">
+                {selectedText.map((text, index) => (
+                    <div key={index} className="selected-quote">
+                        <p>"{text}"</p>
+                        <button 
+                            onClick={() => setSelectedText(prev => 
+                                prev.filter((_, i) => i !== index)
+                            )}
+                            className="remove-quote"
+                        >
+                            ×
+                        </button>
+                    </div>
+                ))}
+            </div>
+
+            <div className="chat-messages">
                 {answer && (
                     <div className="answer-container">
                         <h4>Answer:</h4>
@@ -78,7 +79,56 @@ function ChatPanel({
                     </div>
                 )}
             </div>
+
+            <form onSubmit={handleQuestionSubmit} className="chat-input-form">
+                <input
+                    type="text"
+                    placeholder="Ask a question about the book..."
+                    className="question-input"
+                    ref={question}
+                />
+                <button 
+                    type="submit" 
+                    className="question-submit"
+                    disabled={askingQuestion}
+                >
+                    {askingQuestion ? 'Asking...' : 'Ask'}
+                </button>
+            </form>
         </div>
+    );
+
+    return (
+        <>
+            {/* Original interface */}
+            <div className="chat-container">
+                <ChatInterface />
+                <button 
+                    className="expand-chat-button"
+                    onClick={() => setIsPopupOpen(true)}
+                >
+                    Expand ↗
+                </button>
+            </div>
+
+            {/* Popup interface */}
+            {isPopupOpen && (
+                <div className="chat-popup-overlay">
+                    <div className="chat-popup">
+                        <div className="chat-popup-header">
+                            <h3>Chat</h3>
+                            <button 
+                                className="close-button"
+                                onClick={() => setIsPopupOpen(false)}
+                            >
+                                ×
+                            </button>
+                        </div>
+                        <ChatInterface isPopup={true} />
+                    </div>
+                </div>
+            )}
+        </>
     );
 }
 
