@@ -9,9 +9,6 @@ function PDFView() {
     const [pdfData, setPdfData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [question, setQuestion] = useState('');
-    const [answer, setAnswer] = useState('');
-    const [askingQuestion, setAskingQuestion] = useState(false);
     const { title } = useParams();
     const [selectedText, setSelectedText] = useState([]);
     const [annotations, setAnnotations] = useState("");
@@ -38,42 +35,6 @@ function PDFView() {
 
         fetchData();
     }, [title]);
-
-    const handleQuestionSubmit = async (e) => {
-        e.preventDefault();
-        if (!question.trim() && selectedText.length === 0) return;
-        
-        setAskingQuestion(true);
-        setAnswer('');
-        
-        try {
-            let prompt = "Here is a selection of quotes from this book. Please use them and other context from the book to answer the question at the bottom:";
-            prompt += selectedText.join('\n');
-
-            if (question.length > 0) {
-                prompt += question;
-            } else {
-                prompt += "Explain the content and the context of the quotes.";
-            }
-
-            const response = await fetch(`/api/askquestion?title=${encodeURIComponent(title)}&question=${encodeURIComponent(prompt)}`);
-            const data = await response.json();
-            
-            if (response.ok) {
-                setAnswer(data.answer);
-                setAnnotations(data.annotations);
-            } else {
-                setAnswer('Error: ' + (data.error || 'Failed to get answer'));
-            }
-
-            setQuestion("");
-            setSelectedText([]);
-        } catch (err) {
-            setAnswer('Error connecting to server');
-        } finally {
-            setAskingQuestion(false);
-        }
-    };
 
     const handleTextSelection = () => {
         const selection = window.getSelection();
@@ -136,11 +97,8 @@ function PDFView() {
                     <ChatPanel 
                         selectedText={selectedText}
                         setSelectedText={setSelectedText}
-                        question={question}
-                        setQuestion={setQuestion}
-                        answer={answer}
-                        askingQuestion={askingQuestion}
-                        handleQuestionSubmit={handleQuestionSubmit}
+                        setAnnotations={setAnnotations}
+                        title={title}
                     />
 
                     <div className="book-metadata">
